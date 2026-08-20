@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>공룡 점프 게임</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f7f7f7;
+            font-family: Arial, sans-serif;
+        }
+
+        #game-container {
+            position: relative;
+            width: 600px;
+            height: 200px;
+            border-bottom: 2px solid #333;
+            background-color: #fff;
+            overflow: hidden;
+        }
+
+        #dino {
+            position: absolute;
+            bottom: 0;
+            left: 50px;
+            width: 40px;
+            height: 40px;
+            background-color: #222;
+            border-radius: 4px;
+        }
+
+        #cactus {
+            position: absolute;
+            bottom: 0;
+            right: -20px;
+            width: 20px;
+            height: 40px;
+            background-color: #2e7d32;
+        }
+
+        #score {
+            margin-top: 15px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        #game-over {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 24px;
+            font-weight: bold;
+            color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div id="dino"></div>
+        <div id="cactus"></div>
+        <div id="game-over">GAME OVER (Press Space)</div>
+    </div>
+    <div id="score">점수: 0</div>
+
+    <script>
+        const dino = document.getElementById('dino');
+        const cactus = document.getElementById('cactus');
+        const scoreDisplay = document.getElementById('score');
+        const gameOverText = document.getElementById('game-over');
+
+        let isJumping = false;
+        let isGameOver = false;
+        let score = 0;
+        let cactusPosition = 600;
+        let dinoY = 0;
+        let jumpVelocity = 0;
+        const gravity = 0.6;
+
+        // 조작 이벤트 (스페이스바)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                if (isGameOver) {
+                    resetGame();
+                } else if (!isJumping) {
+                    jump();
+                }
+            }
+        });
+
+        function jump() {
+            isJumping = true;
+            jumpVelocity = 10;
+        }
+
+        function resetGame() {
+            isGameOver = false;
+            score = 0;
+            cactusPosition = 600;
+            dinoY = 0;
+            gameOverText.style.display = 'none';
+            requestAnimationFrame(update);
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            // 공룡 점프 로직 (물리 적용)
+            if (isJumping) {
+                dinoY += jumpVelocity;
+                jumpVelocity -= gravity;
+
+                if (dinoY <= 0) {
+                    dinoY = 0;
+                    isJumping = false;
+                }
+            }
+            dino.style.bottom = dinoY + 'px';
+
+            // 장애물 이동
+            cactusPosition -= 5;
+            if (cactusPosition < -20) {
+                cactusPosition = 600;
+                score += 10;
+                scoreDisplay.textContent = `점수: ${score}`;
+            }
+            cactus.style.left = cactusPosition + 'px';
+
+            // 충돌 감지
+            const dinoBottom = dinoY;
+            const cactusLeft = cactusPosition;
+
+            // 공룡 위치(left: 50, width: 40)와 장애물의 충돌 판정
+            if (cactusLeft > 30 && cactusLeft < 90 && dinoBottom < 40) {
+                isGameOver = true;
+                gameOverText.style.display = 'block';
+            }
+
+            if (!isGameOver) {
+                requestAnimationFrame(update);
+            }
+        }
+
+        // 게임 시작
+        requestAnimationFrame(update);
+    </script>
+</body>
+</html>
